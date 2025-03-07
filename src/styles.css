@@ -1,0 +1,95 @@
+.mermaid-container {
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expand-icon {
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.node rect {
+  transition: stroke 0.2s ease, transform 0.3s ease;
+}
+
+.node:hover rect {
+  filter: brightness(95%);
+}
+
+.node {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.node-expanding {
+  animation: expandNode 0.4s forwards;
+}
+
+.node-collapsing {
+  animation: collapseNode 0.4s forwards;
+}
+
+.edge {
+  transition: opacity 0.3s ease;
+}
+
+.edge-appearing {
+  animation: fadeIn 0.4s forwards;
+}
+
+.edge-disappearing {
+  animation: fadeOut 0.4s forwards;
+}
+
+@keyframes expandNode {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes collapseNode {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.transition-max-height {
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.node-content {
+  transform-origin: center;
+  transition: all 0.3s ease;
+}
+
+.expanded-node rect {
+  stroke-width: 3px !important;
+  stroke: #00aa00 !important;
+}
