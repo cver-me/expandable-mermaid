@@ -21,32 +21,32 @@ const App = () => {
   const [mermaidText, setMermaidText] = useState(PHYSICS_DEMO);
   const [inputText, setInputText] = useState(PHYSICS_DEMO);
   const [isEditing, setIsEditing] = useState(false);
-  
+
   const handleApplyChanges = () => {
     setMermaidText(inputText);
   };
-  
+
   const handleResetToDemo = () => {
     setInputText(PHYSICS_DEMO);
     setMermaidText(PHYSICS_DEMO);
   };
-  
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Expandable Mermaid Diagrams</h1>
-      
+
       <div className="mb-4 flex justify-between items-center">
         <p>
           Click directly on any node to expand or collapse its children.
         </p>
-        <button 
+        <button
           onClick={() => setIsEditing(!isEditing)}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
         >
           {isEditing ? "Hide Editor" : "Edit Diagram"}
         </button>
       </div>
-      
+
       {isEditing && (
         <div className="mb-6 p-4 bg-gray-100 rounded shadow-md">
           <h2 className="text-lg font-semibold mb-2">Edit Mermaid Definition</h2>
@@ -71,7 +71,7 @@ const App = () => {
           </div>
         </div>
       )}
-      
+
       <div className="p-4 bg-white rounded shadow-md">
         <ExpandableMermaidRenderer mermaidText={mermaidText} />
       </div>
@@ -96,7 +96,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
       const extractedLabels = {};
       const allNodeIds = new Set();
       const definedNodeLabels = new Set();
-      
+
       // First pass: identify all nodes and their labels
       const lines = mermaidText.split('\n');
       lines.forEach(line => {
@@ -104,7 +104,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
         if (line.trim().startsWith('graph') || line.trim().startsWith('classDef') || line.trim() === '') {
           return;
         }
-        
+
         // Extract all node definitions - including both sides of relationships
         // This regex looks for node definitions like NodeId["Label"] or NodeId[Label]
         const nodeDefRegex = /(\w+)\s*\[("?)([^\]]+?)\2\]/g;
@@ -112,28 +112,28 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
         while ((match = nodeDefRegex.exec(line)) !== null) {
           const nodeId = match[1];
           const nodeLabel = match[3];
-          
+
           // Store all node IDs we encounter
           allNodeIds.add(nodeId);
-          
+
           // Store the label
           if (nodeLabel && nodeLabel.trim() !== '') {
             extractedLabels[nodeId] = nodeLabel.trim();
             definedNodeLabels.add(nodeId);
           }
         }
-        
+
         // Extract relationships (parent --> child)
         // This regex specifically looks for the arrow pattern
         const relationshipRegex = /(\w+)\s*-->\s*(\w+)/g;
         while ((match = relationshipRegex.exec(line)) !== null) {
           const parentId = match[1];
           const childId = match[2];
-          
+
           // Register both nodes
           allNodeIds.add(parentId);
           allNodeIds.add(childId);
-          
+
           // Add to hierarchy
           if (!extractedHierarchy[parentId]) {
             extractedHierarchy[parentId] = [];
@@ -143,14 +143,14 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
           }
         }
       });
-      
+
       // Find or create a single root node to unify the diagram
       let rootNodeId = null;
       const rootCandidates = Array.from(allNodeIds).filter(nodeId => {
         // A root node is one that isn't a child of any other node
         return !Object.values(extractedHierarchy).some(children => children.includes(nodeId));
       });
-      
+
       // If we only found one root, use it
       if (rootCandidates.length === 1) {
         rootNodeId = rootCandidates[0];
@@ -159,12 +159,12 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
       else if (rootCandidates.length > 1) {
         // Select the first root as the main root
         rootNodeId = rootCandidates[0];
-        
+
         // Connect any other roots as children of the main root
         if (!extractedHierarchy[rootNodeId]) {
           extractedHierarchy[rootNodeId] = [];
         }
-        
+
         for (let i = 1; i < rootCandidates.length; i++) {
           if (!extractedHierarchy[rootNodeId].includes(rootCandidates[i])) {
             extractedHierarchy[rootNodeId].push(rootCandidates[i]);
@@ -175,28 +175,28 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
       else if (allNodeIds.size > 0) {
         rootNodeId = Array.from(allNodeIds)[0];
       }
-      
+
       // Fill in any missing labels with node IDs
       allNodeIds.forEach(nodeId => {
         if (!definedNodeLabels.has(nodeId)) {
           extractedLabels[nodeId] = nodeId; // Use the ID as the label if none was provided
         }
       });
-      
+
       // Initialize expanded states - only expand the root by default
       const initialExpandedState = {};
       if (rootNodeId) {
         initialExpandedState[rootNodeId] = true;
       }
-      
+
       console.log('Parsed hierarchy:', extractedHierarchy);
       console.log('Parsed labels:', extractedLabels);
       console.log('Root node ID:', rootNodeId);
-      
+
       setNodeHierarchy(extractedHierarchy);
       setNodeLabels(extractedLabels);
       setExpandedNodes(initialExpandedState);
-      
+
       // Update the diagram with the parsed information
       setDiagram(mermaidText);
     }
@@ -230,9 +230,8 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
         if (expandedNodes[parentId]) {
           childrenIds.forEach((childId) => {
             if (isNodeVisible(childId)) {
-              definition += `  ${parentId} --> ${childId}["${
-                nodeLabels[childId]
-              } ${getPlaceholder(childId)}"]:::clickable\n`;
+              definition += `  ${parentId} --> ${childId}["${nodeLabels[childId]
+                } ${getPlaceholder(childId)}"]:::clickable\n`;
             }
           });
         }
@@ -293,17 +292,17 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
 
       // We're using a fixed container size now
       // This keeps our references to prior code but will be used differently
-      
+
       // Capture the current node positions and sizes before re-rendering
       const previousNodePositions = new Map();
       const previousNodes = new Set();
-      
+
       if (container.querySelector("svg")) {
         container.querySelectorAll(".node").forEach((node) => {
           const nodeId = node.getAttribute("data-node-id");
           if (nodeId) {
             previousNodes.add(nodeId);
-            
+
             // Store current position and size
             const rect = node.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
@@ -316,12 +315,12 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
           }
         });
       }
-      
+
       // Remove any previous temporary containers
       container.querySelectorAll('.temp-svg-container').forEach(el => {
         container.removeChild(el);
       });
-      
+
       // Create a container for the old SVG that will fade out
       const oldSvgContainer = document.createElement('div');
       oldSvgContainer.className = 'temp-svg-container';
@@ -334,21 +333,21 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
       oldSvgContainer.style.transition = 'opacity 0.3s ease';
       oldSvgContainer.style.pointerEvents = 'none';
       oldSvgContainer.style.zIndex = '1'; // Ensure it's above the container but below new content
-      
+
       // Move the existing SVG to the old container to preserve it during transition
       const existingSvg = container.querySelector("svg");
       if (existingSvg) {
         // Clone the SVG but maintain clickable areas
         const clonedSvg = existingSvg.cloneNode(true);
-        
+
         // Make sure all event handlers are removed from the clone to prevent double events
         clonedSvg.querySelectorAll(".node").forEach(node => {
           node.style.pointerEvents = 'none';
         });
-        
+
         oldSvgContainer.appendChild(clonedSvg);
       }
-      
+
       // Create a new container for the new SVG
       const newSvgContainer = document.createElement('div');
       newSvgContainer.className = 'temp-svg-container';
@@ -357,7 +356,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
       newSvgContainer.style.opacity = '0';
       newSvgContainer.style.transition = 'opacity 0.3s ease';
       newSvgContainer.style.zIndex = '2'; // Ensure it's on top
-      
+
       // Clear the main container before adding our temporary containers
       container.innerHTML = '';
       container.appendChild(oldSvgContainer);
@@ -368,7 +367,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
       // Calculate appropriate diagram sizing based on node count
       const visibleNodeCount = Object.keys(nodeLabels).filter(isNodeVisible).length;
       const minSize = Math.max(400, visibleNodeCount * 80); // Base size on visible nodes
-      
+
       // Configure mermaid rendering with appropriate size constraints
       window.mermaid.initialize({
         startOnLoad: false,
@@ -382,7 +381,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
           nodeSpacing: 40
         }
       });
-      
+
       window.mermaid.render(id, definition, (svgCode) => {
         newSvgContainer.innerHTML = svgCode;
 
@@ -412,7 +411,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
         updatedSvgEl.setAttribute("height", "100%");
         updatedSvgEl.style.maxWidth = "100%";
         updatedSvgEl.style.maxHeight = "100%";
-        
+
         // Scale the SVG to fit within the container while maintaining aspect ratio
         const svgViewBox = updatedSvgEl.getAttribute('viewBox');
         if (!svgViewBox) {
@@ -428,10 +427,10 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
         const currentNodes = new Set();
 
         const nodeEls = updatedSvgEl.querySelectorAll(".node");
-        
+
         // New map to track current positions
         const currentNodePositions = new Map();
-        
+
         nodeEls.forEach((nodeEl) => {
           // Adjust text positioning
           const textEl = nodeEl.querySelector("text");
@@ -448,7 +447,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
           }
 
           currentNodes.add(nodeId);
-          
+
           // Store current position for later reference
           const rect = nodeEl.getBoundingClientRect();
           const containerRect = container.getBoundingClientRect();
@@ -458,17 +457,17 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
             width: rect.width,
             height: rect.height
           });
-          
+
           // For existing nodes, prepare for a smooth transition from old to new position
           if (previousNodes.has(nodeId) && previousNodePositions.has(nodeId)) {
             const prevPos = previousNodePositions.get(nodeId);
             const currentTransform = nodeEl.getAttribute('transform') || '';
-            
+
             // We won't actually apply these transforms yet, as the SVG is still hidden
             // This preparation is for the transition effect later
             nodeEl.setAttribute('data-original-transform', currentTransform);
             nodeEl.setAttribute('data-prev-pos', JSON.stringify(prevPos));
-          } 
+          }
           // For new nodes, prepare them to fade in
           else if (!previousNodes.has(nodeId)) {
             nodeEl.style.opacity = '0';
@@ -529,7 +528,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
           // Initially hide all edges
           edge.style.opacity = '0';
         });
-        
+
         // Final step: Orchestrate the transition
         // Add a slight delay to ensure all measurements and prep are complete
         setTimeout(() => {
@@ -539,84 +538,84 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
             if (oldSvgContainer) {
               oldSvgContainer.style.opacity = '0';
             }
-          
-          // Fade in the new SVG
-          newSvgContainer.style.opacity = '1';
-          
-          // Apply transitions to all nodes based on their previous positions
-          nodeEls.forEach(nodeEl => {
-            const nodeId = nodeEl.getAttribute("data-node-id");
-            if (!nodeId) return;
-            
-            // Smooth transition for existing nodes
-            if (previousNodes.has(nodeId) && nodeEl.hasAttribute('data-prev-pos')) {
-              nodeEl.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
-              nodeEl.style.opacity = '1';
-            } 
-            // Fade in new nodes
-            else if (!previousNodes.has(nodeId)) {
-              nodeEl.style.transition = 'opacity 0.4s ease';
-              nodeEl.style.opacity = '1';
-            }
-          });
-          
-          // Fade in edges gradually, starting with main level connections
-          // This creates a more organic expansion effect
-          const edgesByLevel = {};
-          edgeEls.forEach(edge => {
-            // Try to determine the edge level based on parent-child relationship
-            const [source, target] = edge.id.match(/flowchart-(Level\d+[A-Z0-9]*)/g) || [];
-            if (source && target) {
-              const sourceId = source.replace('flowchart-', '');
-              const targetId = target.replace('flowchart-', '');
-              
-              // Calculate level based on how deep the nodes are
-              const level = Math.max(
-                sourceId.match(/\d+/g) ? parseInt(sourceId.match(/\d+/g)[0]) : 1,
-                targetId.match(/\d+/g) ? parseInt(targetId.match(/\d+/g)[0]) : 1
-              );
-              
-              if (!edgesByLevel[level]) {
-                edgesByLevel[level] = [];
+
+            // Fade in the new SVG
+            newSvgContainer.style.opacity = '1';
+
+            // Apply transitions to all nodes based on their previous positions
+            nodeEls.forEach(nodeEl => {
+              const nodeId = nodeEl.getAttribute("data-node-id");
+              if (!nodeId) return;
+
+              // Smooth transition for existing nodes
+              if (previousNodes.has(nodeId) && nodeEl.hasAttribute('data-prev-pos')) {
+                nodeEl.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+                nodeEl.style.opacity = '1';
               }
-              edgesByLevel[level].push(edge);
-            } else {
-              // Default for edges we can't determine the level
-              if (!edgesByLevel[999]) {
-                edgesByLevel[999] = [];
+              // Fade in new nodes
+              else if (!previousNodes.has(nodeId)) {
+                nodeEl.style.transition = 'opacity 0.4s ease';
+                nodeEl.style.opacity = '1';
               }
-              edgesByLevel[999].push(edge);
-            }
-          });
-          
-          // Animate edges by level with a small delay between levels
-          Object.keys(edgesByLevel).sort((a, b) => a - b).forEach((level, levelIndex) => {
-            edgesByLevel[level].forEach((edge, edgeIndex) => {
-              setTimeout(() => {
-                edge.style.transition = 'opacity 0.4s ease';
-                edge.style.opacity = '1';
-              }, levelIndex * 50 + edgeIndex * 5); // Level delay + small stagger within level
             });
-          });
-          
-          // Clean up all temporary containers after transition is complete
-          setTimeout(() => {
-            // Remove the old container
-            if (oldSvgContainer && oldSvgContainer.parentNode) {
-              oldSvgContainer.parentNode.removeChild(oldSvgContainer);
-            }
-            
-            // Move the contents of the new container to the main container
-            if (newSvgContainer && newSvgContainer.parentNode) {
-              const svg = newSvgContainer.querySelector('svg');
-              if (svg) {
-                // Remove the container but keep its child SVG
-                container.appendChild(svg);
-                newSvgContainer.parentNode.removeChild(newSvgContainer);
+
+            // Fade in edges gradually, starting with main level connections
+            // This creates a more organic expansion effect
+            const edgesByLevel = {};
+            edgeEls.forEach(edge => {
+              // Try to determine the edge level based on parent-child relationship
+              const [source, target] = edge.id.match(/flowchart-(Level\d+[A-Z0-9]*)/g) || [];
+              if (source && target) {
+                const sourceId = source.replace('flowchart-', '');
+                const targetId = target.replace('flowchart-', '');
+
+                // Calculate level based on how deep the nodes are
+                const level = Math.max(
+                  sourceId.match(/\d+/g) ? parseInt(sourceId.match(/\d+/g)[0]) : 1,
+                  targetId.match(/\d+/g) ? parseInt(targetId.match(/\d+/g)[0]) : 1
+                );
+
+                if (!edgesByLevel[level]) {
+                  edgesByLevel[level] = [];
+                }
+                edgesByLevel[level].push(edge);
+              } else {
+                // Default for edges we can't determine the level
+                if (!edgesByLevel[999]) {
+                  edgesByLevel[999] = [];
+                }
+                edgesByLevel[999].push(edge);
               }
-            }
-          }, 400);
-          
+            });
+
+            // Animate edges by level with a small delay between levels
+            Object.keys(edgesByLevel).sort((a, b) => a - b).forEach((level, levelIndex) => {
+              edgesByLevel[level].forEach((edge, edgeIndex) => {
+                setTimeout(() => {
+                  edge.style.transition = 'opacity 0.4s ease';
+                  edge.style.opacity = '1';
+                }, levelIndex * 50 + edgeIndex * 5); // Level delay + small stagger within level
+              });
+            });
+
+            // Clean up all temporary containers after transition is complete
+            setTimeout(() => {
+              // Remove the old container
+              if (oldSvgContainer && oldSvgContainer.parentNode) {
+                oldSvgContainer.parentNode.removeChild(oldSvgContainer);
+              }
+
+              // Move the contents of the new container to the main container
+              if (newSvgContainer && newSvgContainer.parentNode) {
+                const svg = newSvgContainer.querySelector('svg');
+                if (svg) {
+                  // Remove the container but keep its child SVG
+                  container.appendChild(svg);
+                  newSvgContainer.parentNode.removeChild(newSvgContainer);
+                }
+              }
+            }, 400);
+
           });
         }, 100); // Increased delay to ensure DOM is fully ready
       });
@@ -636,11 +635,11 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
   // Helper function to animate node toggling
   const animateNodeToggle = (nodeId, isExpanding) => {
     console.log(`${isExpanding ? "Expanding" : "Collapsing"} node:`, nodeId);
-    
+
     // Whether expanding or collapsing, we'll immediately update the state
     // This ensures consistent behavior and prevents the (0,0) positioning issue
     toggleNode(nodeId);
-    
+
     // A pre-emptive minimal delay helps with rendering coordination
     setTimeout(() => {
       // Force a re-render if needed by touching a DOM property
@@ -689,7 +688,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
     if (nodeHierarchy[nodeId] !== undefined) {
       // Get all child nodes that will be affected by this toggle
       const childrenToAnimate = getDescendantNodes(nodeId);
-      
+
       // Create a visual marker of the current state of the diagram for animation reference
       const container = svgContainerRef.current;
       if (container && container.querySelector('svg')) {
@@ -727,7 +726,7 @@ const ExpandableMermaidRenderer = ({ mermaidText }) => {
 
   return (
     <div>
-      <div 
+      <div
         className="diagram-fixed-container"
         style={{
           width: '100%',
