@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./styles.css";
 
-// Demo mermaid text for the physics example
-const PHYSICS_DEMO = `graph TD
+// Demo mermaid text for the physics flowchart example
+const PHYSICS_FLOWCHART_DEMO = `graph TD
   Level1["Main Concept: Physics"] --> Level2A["Mechanics"]
   Level1 --> Level2B["Electromagnetism"]
   Level1 --> Level2C["Quantum Physics"]
@@ -16,19 +16,61 @@ const PHYSICS_DEMO = `graph TD
   Level3A1 --> Level4A1B["Second Law: F=ma"]
   Level3A1 --> Level4A1C["Third Law: Action-Reaction"]`;
 
+// Demo mermaid text for the mindmap example
+const MINDMAP_DEMO = `mindmap
+  root((Physics))
+    Mechanics
+      Newton's Laws
+        First Law: Inertia
+        Second Law: F=ma
+        Third Law: Action-Reaction
+      Conservation Laws
+        Energy
+        Momentum
+        Angular Momentum
+    Electromagnetism
+      Maxwell's Equations
+      Electromagnetic Waves
+        Light
+        Radio Waves
+        X-rays
+    Quantum Physics
+      Wave-Particle Duality
+      Quantum Measurement
+        Uncertainty Principle
+        Schrödinger's Cat`;
+
 // Main App Component
 const App = () => {
-  const [mermaidText, setMermaidText] = useState(PHYSICS_DEMO);
-  const [inputText, setInputText] = useState(PHYSICS_DEMO);
+  const [diagramType, setDiagramType] = useState("flowchart");
+  const [mermaidText, setMermaidText] = useState(PHYSICS_FLOWCHART_DEMO);
+  const [inputText, setInputText] = useState(PHYSICS_FLOWCHART_DEMO);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Switch diagram type and set appropriate default
+  const handleDiagramTypeChange = (type) => {
+    setDiagramType(type);
+    if (type === "flowchart") {
+      setMermaidText(PHYSICS_FLOWCHART_DEMO);
+      setInputText(PHYSICS_FLOWCHART_DEMO);
+    } else {
+      setMermaidText(MINDMAP_DEMO);
+      setInputText(MINDMAP_DEMO);
+    }
+  };
 
   const handleApplyChanges = () => {
     setMermaidText(inputText);
   };
 
   const handleResetToDemo = () => {
-    setInputText(PHYSICS_DEMO);
-    setMermaidText(PHYSICS_DEMO);
+    if (diagramType === "flowchart") {
+      setInputText(PHYSICS_FLOWCHART_DEMO);
+      setMermaidText(PHYSICS_FLOWCHART_DEMO);
+    } else {
+      setInputText(MINDMAP_DEMO);
+      setMermaidText(MINDMAP_DEMO);
+    }
   };
 
   return (
@@ -36,9 +78,31 @@ const App = () => {
       <h1 className="text-2xl font-bold mb-4">Expandable Mermaid Diagrams</h1>
 
       <div className="mb-4 flex justify-between items-center">
-        <p>
-          Click directly on any node to expand or collapse its children.
-        </p>
+        <div className="flex gap-4 items-center">
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleDiagramTypeChange("flowchart")}
+              className={`px-4 py-2 ${
+                diagramType === "flowchart" 
+                  ? "bg-purple-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              } rounded hover:bg-opacity-90 transition`}
+            >
+              Flowchart
+            </button>
+            <button
+              onClick={() => handleDiagramTypeChange("mindmap")}
+              className={`px-4 py-2 ${
+                diagramType === "mindmap" 
+                  ? "bg-purple-600 text-white" 
+                  : "bg-gray-200 text-gray-700"
+              } rounded hover:bg-opacity-90 transition`}
+            >
+              Mindmap
+            </button>
+          </div>
+          <p>Click on any node to expand or collapse its children.</p>
+        </div>
         <button
           onClick={() => setIsEditing(!isEditing)}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
@@ -73,7 +137,11 @@ const App = () => {
       )}
 
       <div className="p-4 bg-white rounded shadow-md">
-        <ExpandableMermaidRenderer mermaidText={mermaidText} />
+        {diagramType === "flowchart" ? (
+          <ExpandableMermaidRenderer mermaidText={mermaidText} />
+        ) : (
+          <ExpandableMindmapRenderer mermaidText={mermaidText} />
+        )}
       </div>
     </div>
   );
